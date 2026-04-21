@@ -16,8 +16,11 @@ export const AlertasContainer = () => {
   }, []);
 
   return (
-    <div>
-      <h2>Monitoreo de Alertas Activas</h2>
+    <div style={{ marginTop: '20px', backgroundColor: '#1e1e2f', padding: '20px', borderRadius: '8px' }}>
+      <h2 style={{ borderBottom: '1px solid #333', paddingBottom: '10px', marginTop: 0 }}>
+        Detalle de Alertas Ingresadas
+      </h2>
+      
       {/* El Container le pasa los datos al Presenter */}
       {alertas.map(alerta => (
         <AlertaCard 
