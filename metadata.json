@@ -1,0 +1,12 @@
+{
+  "name": "Valle del Sol: Gestión de Incendios",
+  "description": "Panel de control profesional para la gestión inteligente y monitoreo en tiempo real de incendios forestales en la Municipalidad Valle del Sol.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "Data Visualization",
+    "Real-time Monitoring",
+    "Emergency Management"
+  ]
+}
