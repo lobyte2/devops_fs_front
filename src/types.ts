@@ -14,6 +14,11 @@ export interface FireAlert {
   severity: AlertSeverity;
   timestamp: string;
   coordinates: [number, number];
+  reporter?: {
+    email: string;
+    deviceId: string;
+    timestamp: string;
+  };
 }
 
 export interface NavItem {
