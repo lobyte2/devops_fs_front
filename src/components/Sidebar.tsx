@@ -7,20 +7,26 @@ import {
   Settings,
   LogOut,
   Flame,
-  ShieldAlert
+  Archive // Añadimos un icono para historial
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+// Actualizamos los items para que coincidan con tus microservicios
 const navItems = [
-  { id: 'monitoring', label: 'Monitoreo', icon: MapIcon },
-  { id: 'alerts', label: 'Alertas', icon: Bell },
-  { id: 'reports', label: 'Reportes', icon: BarChart3 },
-  { id: 'community', label: 'Comunidad', icon: Users },
+  { id: 'monitoreo', label: 'Zonas Monitoreo', icon: MapIcon },
+  { id: 'alertas', label: 'Alertas', icon: Bell },
+  { id: 'reportes', label: 'Reportes', icon: BarChart3 },
+  { id: 'historial', label: 'Historial', icon: Archive }, 
 ];
 
-export function Sidebar({ onLogout }: { onLogout: () => void }) {
-  const [activeTab, setActiveTab] = React.useState('monitoring');
+// Añadimos activeTab y onTabChange a las Props
+interface SidebarProps {
+    onLogout: () => void;
+    activeTab: string;
+    onTabChange: (tabId: string) => void;
+}
 
+export function Sidebar({ onLogout, activeTab, onTabChange }: SidebarProps) {
   return (
       <aside className="w-[240px] h-screen bg-dark-bg border-r border-white/10 flex flex-col p-6 z-50">
         <div className="flex items-center gap-3 mb-10">
@@ -41,7 +47,7 @@ export function Sidebar({ onLogout }: { onLogout: () => void }) {
           {navItems.map((item) => (
               <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => onTabChange(item.id)} // Llamamos a la función del padre
                   className={cn(
                       "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group text-sm font-medium",
                       activeTab === item.id

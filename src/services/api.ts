@@ -1,10 +1,9 @@
-import { Alerta, Usuario } from '../types';
+import { Alerta, Usuario, ZonaMonitoreo, Historial, Reporte } from '../types';
 
-// Actualizado al puerto 9090 de tu API Gateway
-const API_BASE_URL = 'http://localhost:9090';
+const API_BASE_URL = 'http://localhost:9090'; 
 
 export const api = {
-  // Login contra el MS Usuarios a través del Gateway
+  // --- USUARIOS ---
   login: async (email: string, password: string): Promise<Usuario> => {
     const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
       method: 'POST',
@@ -15,10 +14,31 @@ export const api = {
     return response.json();
   },
 
-  // Obtener alertas del MS Alertas a través del Gateway
+  // --- ALERTAS ---
   getAlertas: async (): Promise<Alerta[]> => {
     const response = await fetch(`${API_BASE_URL}/alertas`);
     if (!response.ok) throw new Error('Error al obtener alertas');
+    return response.json();
+  },
+
+  // --- MONITOREO ---
+  getZonas: async (): Promise<ZonaMonitoreo[]> => {
+    const response = await fetch(`${API_BASE_URL}/monitoreo`);
+    if (!response.ok) throw new Error('Error al obtener zonas de monitoreo');
+    return response.json();
+  },
+
+  // --- HISTORIAL ---
+  getHistorial: async (): Promise<Historial[]> => {
+    const response = await fetch(`${API_BASE_URL}/historial`);
+    if (!response.ok) throw new Error('Error al obtener historial');
+    return response.json();
+  },
+
+  // --- REPORTES ---
+  getReportes: async (): Promise<Reporte[]> => {
+    const response = await fetch(`${API_BASE_URL}/reportes`);
+    if (!response.ok) throw new Error('Error al obtener reportes');
     return response.json();
   }
 };
