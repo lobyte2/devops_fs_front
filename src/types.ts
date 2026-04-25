@@ -1,28 +1,51 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 export type AlertStatus = 'PENDING' | 'CONFIRMED';
 export type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-export interface FireAlert {
-  id: string;
-  location: string;
-  region: string;
-  status: AlertStatus;
-  severity: AlertSeverity;
-  timestamp: string;
-  coordinates: [number, number];
-  reporter?: {
-    email: string;
-    deviceId: string;
-    timestamp: string;
-  };
+export interface Usuario {
+  id?: number;
+  nombre: string;
+  email: string;
+  rol: string;
+  password?: string;
 }
 
-export interface NavItem {
+export interface Alerta {
   id: string;
-  label: string;
-  icon: string;
+  ubicacion: string;
+  region: string;
+  estado: AlertStatus;
+  severidad: AlertSeverity;
+  timestamp: string;
+  latitud: number;
+  longitud: number;
+  brigadistaEmail: string;
+}
+
+
+export interface ZonaMonitoreo {
+  id?: number;
+  nombreZona: string;
+  latitud: number;
+  longitud: number;
+  nivelRiesgo: string;
+  brigadaActiva: boolean;
+}
+
+export interface Historial {
+  id?: number;
+  ubicación: string; 
+  fechaInicio: string;
+  fechaFin: string;
+  hectareasAfectadas: number;
+}
+
+export interface Reporte {
+  id?: string;
+  descripcion: string;
+  latitud: number;
+  longitud: number;
+  urlImagen: string;
+  urlVideo: string;
+  estado: string;
+  fechaReporte: string;
 }

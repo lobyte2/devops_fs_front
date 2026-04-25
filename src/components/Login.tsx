@@ -1,7 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Flame, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Flame, ArrowRight, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
+// Asegúrate de que esta ruta sea correcta según donde hayas creado tu archivo api.ts
+import { api } from '../services/api'; 
 
 interface LoginProps {
     onLogin: (email: string) => void;
@@ -11,14 +13,24 @@ export function Login({ onLogin }: LoginProps) {
     const [pin, setPin] = React.useState('');
     const [isLoading, setIsLoading] = React.useState(false);
 
-    const handleQuickLogin = (p: string) => {
+    const handleQuickLogin = async (p: string) => {
         if (p.length === 4) {
             setIsLoading(true);
-            // Simulación de validación instantánea
-            setTimeout(() => {
-                onLogin('brigada@sol.cl');
+            try {
+                // Llamamos al microservicio a través del gateway
+                // Utilizamos un correo por defecto para la prueba inicial,
+                // idealmente el usuario también ingresaría su correo o ID.
+                const usuarioValido = await api.login('brigada@sol.cl', p);
+                
+                // Si la autenticación es exitosa, pasamos el email al estado global
+                onLogin(usuarioValido.email);
+            } catch (error) {
+                console.error("Error de acceso:", error);
+                alert("Credenciales inválidas o error de conexión con el servidor.");
+                setPin(''); // Limpiamos el PIN para que vuelva a intentar
+            } finally {
                 setIsLoading(false);
-            }, 400);
+            }
         }
     };
 
@@ -64,7 +76,7 @@ export function Login({ onLogin }: LoginProps) {
                                     if (num === 'C') {
                                         setPin('');
                                     } else if (pin.length < 4) {
-                                        const newPin = pin + num;
+                                        const newPin = pin + num.toString();
                                         setPin(newPin);
                                         handleQuickLogin(newPin);
                                     }

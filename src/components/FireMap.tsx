@@ -2,10 +2,10 @@ import React from 'react';
 import * as d3 from 'd3';
 import { motion } from 'motion/react';
 import { Maximize2, ZoomIn, ZoomOut, Compass, Info } from 'lucide-react';
-import { FireAlert } from '../types';
+import { Alerta } from '../types';
 
 interface FireMapProps {
-  alerts: FireAlert[];
+  alerts: Alerta[];
 }
 
 export function FireMap({ alerts }: FireMapProps) {
@@ -61,7 +61,10 @@ export function FireMap({ alerts }: FireMapProps) {
     const firesGroup = svg.append('g').attr('class', 'fire-spots');
 
     alerts.forEach((alert) => {
-      const [lon, lat] = alert.coordinates;
+      // Usamos los nuevos nombres de propiedades del backend
+      const lon = alert.longitud;
+      const lat = alert.latitud;
+      
       // Map coordinates to our stylized map (simplified)
       // Since it's a UI mockup, we place them relative to center
       const x = width / 2 + (lon + 71.5) * 50;
@@ -71,15 +74,15 @@ export function FireMap({ alerts }: FireMapProps) {
         .attr('transform', `translate(${x}, ${y})`)
         .attr('class', 'cursor-pointer group');
 
-      // Pulse effect
+      // Pulse effect (cambiamos severity por severidad)
       fire.append('circle')
         .attr('r', 16)
-        .attr('fill', alert.severity === 'CRITICAL' ? 'rgba(255, 59, 48, 0.4)' : 'rgba(246, 173, 85, 0.4)')
+        .attr('fill', alert.severidad === 'CRITICAL' ? 'rgba(255, 59, 48, 0.4)' : 'rgba(246, 173, 85, 0.4)')
         .attr('class', 'animate-pulse');
 
       fire.append('circle')
         .attr('r', 4)
-        .attr('fill', alert.severity === 'CRITICAL' ? '#FF3B30' : '#F6AD55')
+        .attr('fill', alert.severidad === 'CRITICAL' ? '#FF3B30' : '#F6AD55')
         .attr('stroke', 'rgba(255,255,255,0.2)')
         .attr('stroke-width', 1);
     });

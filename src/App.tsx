@@ -1,55 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { FireMap } from './components/FireMap';
 import { AlertCard } from './components/AlertCard';
 import { StatsPanel } from './components/StatsPanel';
 import { Login } from './components/Login';
-import { FireAlert } from './types';
+import { Alerta } from './types';
 import { Search, Filter, Bell, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-const mockAlerts: FireAlert[] = [
-  {
-    id: 'INC-0824',
-    location: 'Cerro La Campana',
-    region: 'Valparaíso',
-    status: 'PENDING',
-    severity: 'HIGH',
-    timestamp: 'Hace 12 min',
-    coordinates: [-71.12, -32.95],
-    reporter: { email: 'b.guerrero@brigada.cl', deviceId: 'IPH-9422', timestamp: '2024-04-22 14:12' }
-  },
-  {
-    id: 'INC-0841',
-    location: 'Cajón del Maipo',
-    region: 'Metropolitana',
-    status: 'PENDING',
-    severity: 'CRITICAL',
-    timestamp: 'Hace 5 min',
-    coordinates: [-70.35, -33.65],
-    reporter: { email: 'm.flores@emergencias.cl', deviceId: 'AND-2210', timestamp: '2024-04-22 14:19' }
-  },
-  {
-    id: 'INC-0792',
-    location: 'Parque Nacional Radal',
-    region: 'Maule',
-    status: 'CONFIRMED',
-    severity: 'MEDIUM',
-    timestamp: 'Hace 2 horas',
-    coordinates: [-70.98, -35.48],
-    reporter: { email: 'central.maule@institucion.cl', deviceId: 'WEB-4821', timestamp: '2024-04-22 12:44' }
-  },
-  {
-    id: 'INC-0755',
-    location: 'Huasco Alto',
-    region: 'Atacama',
-    status: 'CONFIRMED',
-    severity: 'LOW',
-    timestamp: 'Hace 5 horas',
-    coordinates: [-70.58, -28.58],
-    reporter: { email: 'u.atacama@brigada.cl', deviceId: 'TAB-5512', timestamp: '2024-04-22 09:30' }
-  }
-];
+import { api } from './services/api';
 
 export default function App() {
   const [darkMode, setDarkMode] = React.useState(true);
@@ -57,7 +15,16 @@ export default function App() {
     return localStorage.getItem('vsol_auth') === 'true';
   });
   const [userEmail, setUserEmail] = React.useState('brigada@sol.cl');
-  const [alerts, setAlerts] = React.useState<FireAlert[]>(mockAlerts);
+  const [alerts, setAlerts] = React.useState<Alerta[]>([]);
+
+  // Conexión con el Microservicio de Alertas
+  useEffect(() => {
+    if (isAuthenticated) {
+      api.getAlertas()
+        .then(data => setAlerts(data))
+        .catch(err => console.error("Error cargando el MS Alertas:", err));
+    }
+  }, [isAuthenticated]);
 
   const handleLogin = (email: string) => {
     localStorage.setItem('vsol_auth', 'true');
@@ -71,20 +38,20 @@ export default function App() {
   };
 
   const handleCreateReport = () => {
-    const newAlert: FireAlert = {
+    // Estructura adaptada a la entidad Alerta de Java
+    const newAlert: Alerta = {
       id: `INC-${Math.floor(Math.random() * 9000) + 1000}`,
-      location: 'Ubicación Manual',
+      ubicacion: 'Ubicación Manual',
       region: 'Zona Centro',
-      status: 'PENDING',
-      severity: 'MEDIUM',
-      timestamp: 'Ahora mismo',
-      coordinates: [-70.64, -33.43],
-      reporter: {
-        email: userEmail,
-        deviceId: 'AUTH-SEC-4421',
-        timestamp: new Date().toLocaleTimeString()
-      }
+      estado: 'PENDING',
+      severidad: 'MEDIUM',
+      timestamp: new Date().toLocaleTimeString(),
+      latitud: -33.43,
+      longitud: -70.64,
+      brigadistaEmail: userEmail
     };
+    
+    // Aquí a futuro agregarías: api.crearAlerta(newAlert)
     setAlerts([newAlert, ...alerts]);
   };
 
