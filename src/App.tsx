@@ -4,9 +4,10 @@ import { FireMap } from './components/FireMap';
 import { AlertCard } from './components/AlertCard';
 import { StatsPanel } from './components/StatsPanel';
 import { Login } from './components/Login';
-import { FireAlert } from './types';
-import { Search, Filter, Bell, Moon, Sun } from 'lucide-react';
+import { FireAlert, UserRole } from './types';
+import { Search, Filter, Bell, Moon, Sun, ShieldCheck, MapPin, AlertTriangle, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { cn } from './lib/utils';
 
 const mockAlerts: FireAlert[] = [
   {
@@ -56,17 +57,25 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = React.useState(() => {
     return localStorage.getItem('vsol_auth') === 'true';
   });
-  const [userEmail, setUserEmail] = React.useState('brigada@sol.cl');
+  const [userRole, setUserRole] = React.useState<UserRole>(() => {
+    return (localStorage.getItem('vsol_role') as UserRole) || 'ADMIN';
+  });
+  const [userEmail, setUserEmail] = React.useState(() => {
+    return localStorage.getItem('vsol_remembered_email') || 'brigada@sol.cl';
+  });
   const [alerts, setAlerts] = React.useState<FireAlert[]>(mockAlerts);
 
-  const handleLogin = (email: string) => {
+  const handleLogin = (email: string, role: UserRole) => {
     localStorage.setItem('vsol_auth', 'true');
+    localStorage.setItem('vsol_role', role);
     setUserEmail(email);
+    setUserRole(role);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('vsol_auth');
+    localStorage.removeItem('vsol_role');
     setIsAuthenticated(false);
   };
 
@@ -94,21 +103,27 @@ export default function App() {
 
   return (
       <div className={`flex h-screen bg-charcoal font-sans overflow-hidden ${darkMode ? 'dark' : ''}`}>
-        <Sidebar onLogout={handleLogout} />
+        <Sidebar onLogout={handleLogout} role={userRole} />
 
         <main className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="h-[72px] px-8 flex items-center justify-between border-b border-white/[0.12] z-40 bg-charcoal/80 backdrop-blur-[10px] sticky top-0">
             <div className="flex flex-col">
-              <h1 className="text-[18px] font-semibold text-pure-white leading-tight">Panel de Control General</h1>
-              <p className="text-[12px] text-[#8E8E93] font-medium">Brigadista identificado: {userEmail}</p>
+              <h1 className="text-[18px] font-semibold text-pure-white leading-tight">
+                {userRole === 'ADMIN' ? 'Panel de Control General' : 'Portal Comunitario Valle del Sol'}
+              </h1>
+              <p className="text-[12px] text-[#8E8E93] font-medium">
+                {userRole === 'ADMIN' ? `Brigadista: ${userEmail}` : `Bienvenido, ${userEmail.split('@')[0]}`}
+              </p>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-forest/10 border border-forest/20 rounded-full text-[12px] font-bold text-forest uppercase tracking-wider">
-                <div className="w-1.5 h-1.5 rounded-full bg-forest animate-pulse" />
-                Red de Sensores Online
-              </div>
+              {userRole === 'ADMIN' && (
+                  <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-forest/10 border border-forest/20 rounded-full text-[12px] font-bold text-forest uppercase tracking-wider">
+                    <div className="w-1.5 h-1.5 rounded-full bg-forest animate-pulse" />
+                    Red de Sensores Online
+                  </div>
+              )}
 
               <button
                   onClick={() => setDarkMode(!darkMode)}
@@ -117,8 +132,8 @@ export default function App() {
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              <div className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-white/[0.12] transition-colors">
-                BG
+              <div className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-white/[0.12] transition-colors uppercase">
+                {userEmail[0]}
               </div>
             </div>
           </header>
@@ -126,20 +141,53 @@ export default function App() {
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto p-8 flex gap-8">
             <div className="flex-1 flex flex-col gap-8 min-w-0">
-              {/* Top Stats Overview */}
-              <div className="grid grid-cols-4 gap-6">
-                {[
-                  { label: 'Focos Activos', val: '24', sub: '+3 nuevo hoy', color: 'text-emergency' },
-                  { label: 'Hectáreas Afectadas', val: '1,420', sub: 'Zona Central', color: 'text-pure-white' },
-                  { label: 'Brigadas Desplegadas', val: '42', sub: '85% capacidad', color: 'text-forest' },
-                  { label: 'Tiempo Resp. Prom.', val: '14m', sub: 'Reducción de 2m', color: 'text-pure-white' },
-                ].map((stat, i) => (
-                    <div key={i} className="stat-box glass p-4 rounded-xl relative overflow-hidden group border border-white/[0.08]">
-                      <p className="text-[10px] font-bold text-[#8E8E93] uppercase tracking-widest mb-1">{stat.label}</p>
-                      <span className={`text-[18px] font-bold ${stat.color}`}>{stat.val}</span>
-                      <p className="text-[10px] text-white/20 font-medium mt-0.5 truncate">{stat.sub}</p>
+              {userRole === 'USER' && (
+                  <div className="bg-emergency/10 border border-emergency/20 p-5 rounded-2xl flex items-start gap-4">
+                    <div className="w-10 h-10 bg-emergency/20 rounded-xl flex items-center justify-center shrink-0">
+                      <AlertTriangle className="text-emergency w-5 h-5" />
                     </div>
-                ))}
+                    <div>
+                      <h3 className="text-sm font-bold text-emergency uppercase tracking-wider mb-1">Estado de Alerta: Activo</h3>
+                      <p className="text-[13px] text-white/70 leading-relaxed">
+                        Se han detectado focos cercanos a tu zona. Recomendamos mantener las vías de evacuación despejadas y seguir las instrucciones de los brigadistas en terreno.
+                      </p>
+                    </div>
+                  </div>
+              )}
+
+              {/* Admin Stats or User Info Cards */}
+              <div className="grid grid-cols-4 gap-6">
+                {userRole === 'ADMIN' ? (
+                    [
+                      { label: 'Focos Activos', val: '24', sub: '+3 nuevo hoy', color: 'text-emergency' },
+                      { label: 'Hectáreas Afectadas', val: '1,420', sub: 'Zona Central', color: 'text-pure-white' },
+                      { label: 'Brigadas Desplegadas', val: '42', sub: '85% capacidad', color: 'text-forest' },
+                      { label: 'Tiempo Resp. Prom.', val: '14m', sub: 'Reducción de 2m', color: 'text-pure-white' },
+                    ].map((stat, i) => (
+                        <div key={i} className="stat-box glass p-4 rounded-xl relative overflow-hidden group border border-white/[0.08]">
+                          <p className="text-[10px] font-bold text-[#8E8E93] uppercase tracking-widest mb-1">{stat.label}</p>
+                          <span className={`text-[18px] font-bold ${stat.color}`}>{stat.val}</span>
+                          <p className="text-[10px] text-white/20 font-medium mt-0.5 truncate">{stat.sub}</p>
+                        </div>
+                    ))
+                ) : (
+                    [
+                      { label: 'Tu Zona', val: 'Segura', sub: 'Cajón del Maipo', color: 'text-forest', Icon: MapPin },
+                      { label: 'Calidad Aire', val: 'Media', sub: '65 AQI - Moderado', color: 'text-white', Icon: ShieldCheck },
+                      { label: 'Alertas Vecinales', val: '2', sub: 'Reportadas cerca', color: 'text-emergency', Icon: AlertTriangle },
+                      { label: 'Centros Acopio', val: '3', sub: 'Operativos ahora', color: 'text-pure-white', Icon: Info },
+                    ].map((stat, i) => (
+                        <div key={i} className="stat-box glass p-4 rounded-xl border border-white/[0.08] flex items-center gap-4">
+                          <div className={cn("w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0", stat.color.replace('text-', 'bg-').replace('/10', '/20'))}>
+                            <stat.Icon className={cn("w-5 h-5", stat.color)} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-[#8E8E93] uppercase tracking-widest">{stat.label}</p>
+                            <span className={cn("text-[15px] font-bold block", stat.color)}>{stat.val}</span>
+                          </div>
+                        </div>
+                    ))
+                )}
               </div>
 
               {/* Map Section */}
@@ -147,8 +195,8 @@ export default function App() {
                 <FireMap alerts={alerts} />
               </div>
 
-              {/* Bottom Charts */}
-              <StatsPanel />
+              {/* Bottom Charts - Only for Admin */}
+              {userRole === 'ADMIN' && <StatsPanel />}
             </div>
 
             <aside className="w-[320px] flex flex-col gap-6 sticky top-0 h-full border-l border-white/[0.12] pl-8">
@@ -166,7 +214,7 @@ export default function App() {
                   onClick={handleCreateReport}
                   className="w-full py-3 rounded-xl bg-emergency/10 border border-emergency/30 text-emergency font-bold text-[13px] hover:bg-emergency hover:text-pure-white transition-all duration-300 shadow-xl shadow-emergency/5 uppercase tracking-wider"
               >
-                Declarar Nueva Emergencia
+                {userRole === 'ADMIN' ? 'Declarar Nueva Emergencia' : 'Reportar Avistamiento'}
               </button>
             </aside>
           </div>
