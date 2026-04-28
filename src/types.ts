@@ -6,6 +6,8 @@
 export type AlertStatus = 'PENDING' | 'CONFIRMED';
 export type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
+export type UserRole = 'ADMIN' | 'USER';
+
 export interface FireAlert {
   id: string;
   location: string;
