@@ -49,3 +49,14 @@ export interface Reporte {
   estado: string;
   fechaReporte: string;
 }
+
+export interface ReporteBackend {
+  id?: string; // Opcional porque al crearlo aún no tiene ID
+  descripcion: string;
+  latitud: number;
+  longitud: number;
+  urlImagen: string;
+  urlVideo: string;
+  estado: string;
+  fechaReporte: string;
+}

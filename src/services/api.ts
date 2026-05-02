@@ -1,6 +1,28 @@
 import { Alerta, Usuario, ZonaMonitoreo, Historial, Reporte } from '../types';
+import { ReporteBackend } from '../types';
 
 const API_BASE_URL = 'http://localhost:9090'; 
+
+// Función para obtener la lista
+export const obtenerReportes = async (): Promise<ReporteBackend[]> => {
+  const response = await fetch(`${API_BASE_URL}/reportes`);
+  if (!response.ok) throw new Error('Error al obtener reportes');
+  return await response.json();
+};
+
+// NUEVA Función para CREAR un reporte
+export const crearReporte = async (nuevoReporte: ReporteBackend): Promise<ReporteBackend> => {
+  const response = await fetch(`${API_BASE_URL}/reportes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(nuevoReporte),
+  });
+  
+  if (!response.ok) throw new Error('Error al crear el reporte');
+  return await response.json();
+};
 
 export const api = {
   // --- USUARIOS ---
