@@ -9,6 +9,7 @@ import { Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from './services/api';
 import { ReporteForm } from './components/organisms/ReporteForm';
+import { crearReporte, obtenerReportes } from './services/api';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -125,11 +126,22 @@ export default function App() {
             {mostrarFormulario && (
               <div className="mb-6">
                  <ReporteForm 
-                    onGuardar={(nuevo) => {
-                      // Por ahora solo lo imprimimos en consola. 
-                      // Luego lo conectaremos al backend.
-                      console.log("Guardando", nuevo);
-                      setMostrarFormulario(false);
+                    onGuardar={async (nuevo) => {
+                      try {
+                        // 1. Enviamos el nuevo reporte a la base de datos (Backend)
+                        await crearReporte(nuevo);
+                        
+                        // 2. Volvemos a pedir todos los reportes para que la tabla se actualice
+                        const reportesActualizados = await obtenerReportes();
+                        setReportes(reportesActualizados); // Actualizamos el estado de la tabla
+                        
+                        // 3. Ocultamos el formulario
+                        setMostrarFormulario(false);
+                        
+                      } catch (error) {
+                        console.error("Error al guardar el reporte:", error);
+                        alert("Hubo un problema al guardar. Revisa que el backend esté encendido.");
+                      }
                     }} 
                     onCancelar={() => setMostrarFormulario(false)} 
                  />
