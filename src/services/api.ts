@@ -31,6 +31,18 @@ export const eliminarReporte = async (id: string): Promise<void> => {
   if (!response.ok) throw new Error('Error al eliminar el reporte');
 };
 
+export const actualizarReporte = async (id: string, reporte: ReporteBackend): Promise<ReporteBackend> => {
+  const response = await fetch(`${API_BASE_URL}/reportes/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(reporte),
+  });
+  if (!response.ok) throw new Error('Error al actualizar el reporte');
+  return await response.json();
+};
+
 export const api = {
   // --- USUARIOS ---
   login: async (email: string, password: string): Promise<Usuario> => {

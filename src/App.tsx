@@ -11,6 +11,8 @@ import { api } from './services/api';
 import { ReporteForm } from './components/organisms/ReporteForm';
 import { crearReporte, obtenerReportes } from './services/api';
 import { eliminarReporte } from './services/api';
+import { actualizarReporte } from './services/api';
+import { ReporteBackend } from './types';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -18,6 +20,7 @@ export default function App() {
   const [userEmail, setUserEmail] = useState('brigada@sol.cl');
   const [activeTab, setActiveTab] = useState('alertas');
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [reporteEditando, setReporteEditando] = useState<ReporteBackend | null>(null);
 
   // Estados para los datos de los microservicios
   const [alerts, setAlerts] = useState<Alerta[]>([]);
@@ -115,7 +118,10 @@ export default function App() {
               
               {!mostrarFormulario && (
                 <button 
-                  onClick={() => setMostrarFormulario(true)}
+                  onClick={() => {
+                    setReporteEditando(null); // Limpiamos para que sea un formulario nuevo
+                    setMostrarFormulario(true);
+                  }}
                   className="bg-emergency text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-emergency/80 transition-colors"
                 >
                   + Añadir Reporte
@@ -123,33 +129,42 @@ export default function App() {
               )}
             </div>
 
-            {/* --- EL FORMULARIO APARECE AQUÍ CUANDO HACES CLIC --- */}
+            {/* --- FORMULARIO (Maneja Crear y Editar) --- */}
             {mostrarFormulario && (
               <div className="mb-6">
                  <ReporteForm 
-                    onGuardar={async (nuevo) => {
+                    reporteInicial={reporteEditando} 
+                    onGuardar={async (datosFormulario) => {
                       try {
-                        // 1. Enviamos el nuevo reporte a la base de datos (Backend)
-                        await crearReporte(nuevo);
+                        if (reporteEditando?.id) {
+                          // Si hay un ID, actualizamos
+                          await actualizarReporte(reporteEditando.id, datosFormulario);
+                        } else {
+                          // Si no hay ID, creamos uno nuevo
+                          await crearReporte(datosFormulario);
+                        }
                         
-                        // 2. Volvemos a pedir todos los reportes para que la tabla se actualice
-                        const reportesActualizados = await obtenerReportes();
-                        setReportes(reportesActualizados); // Actualizamos el estado de la tabla
-                        
-                        // 3. Ocultamos el formulario
+                        // Recargamos la tabla y cerramos el formulario
+                        const actualizados = await obtenerReportes();
+                        setReportes(actualizados);
                         setMostrarFormulario(false);
+                        setReporteEditando(null);
                         
                       } catch (error) {
-                        console.error("Error al guardar el reporte:", error);
-                        alert("Hubo un problema al guardar. Revisa que el backend esté encendido.");
+                        console.error("Error al guardar:", error);
+                        alert("Hubo un problema al guardar el reporte.");
                       }
                     }} 
-                    onCancelar={() => setMostrarFormulario(false)} 
+                    onCancelar={() => {
+                      // Si cancela, cerramos y limpiamos
+                      setMostrarFormulario(false);
+                      setReporteEditando(null);
+                    }} 
                  />
               </div>
             )}
 
-            {/* --- TU TABLA INTACTA --- */}
+            {/* --- LA TABLA --- */}
             <div className="overflow-hidden rounded-xl border border-white/10 glass">
                <table className="w-full text-left border-collapse">
                   <thead className="bg-white/5 text-[11px] uppercase font-bold text-[#8E8E93]">
@@ -158,7 +173,7 @@ export default function App() {
                       <th className="p-4">Estado</th>
                       <th className="p-4">Fecha</th>
                       <th className="p-4">Media</th>
-                      <th className="p-4 text-right">Acciones</th> {/* NUEVA COLUMNA */}
+                      <th className="p-4 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm text-white/70">
@@ -176,10 +191,14 @@ export default function App() {
                         <td className="p-4 text-xs font-mono">{new Date(r.fechaReporte).toLocaleDateString()}</td>
                         <td className="p-4">🖼️</td>
                         <td className="p-4 text-right space-x-3">
-                          {/* BOTÓN EDITAR (Lo conectaremos en el siguiente paso) */}
+                          
+                          {/* BOTÓN EDITAR */}
                           <button 
                             className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                            onClick={() => console.log("Editar", r.id)}
+                            onClick={() => {
+                              setReporteEditando(r); // Le pasamos los datos del reporte al formulario
+                              setMostrarFormulario(true); // Abrimos el formulario
+                            }}
                           >
                             Editar
                           </button>
@@ -188,21 +207,20 @@ export default function App() {
                           <button 
                             className="text-emergency hover:text-red-400 font-medium transition-colors"
                             onClick={async () => {
-                              if (window.confirm("¿Estás seguro de que deseas eliminar este reporte?")) {
+                              if (window.confirm("¿Eliminar este reporte permanentemente?")) {
                                 try {
-                                  // 1. Mandamos a borrar a la BD
                                   await eliminarReporte(r.id!);
-                                  // 2. Recargamos la tabla
                                   const actualizados = await obtenerReportes();
                                   setReportes(actualizados);
                                 } catch (error) {
-                                  alert("Error al eliminar el reporte");
+                                  alert("Error al eliminar");
                                 }
                               }
                             }}
                           >
                             Eliminar
                           </button>
+
                         </td>
                       </tr>
                     ))}

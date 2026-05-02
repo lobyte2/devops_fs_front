@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ReporteBackend } from '../../types';
 
 interface ReporteFormProps {
+  reporteInicial?: ReporteBackend | null; // NUEVO: puede recibir un reporte para editar
   onGuardar: (reporte: ReporteBackend) => void;
   onCancelar: () => void;
 }
 
-export const ReporteForm: React.FC<ReporteFormProps> = ({ onGuardar, onCancelar }) => {
-  const [formData, setFormData] = useState<ReporteBackend>({
-    descripcion: '',
-    latitud: -41.4693,
-    longitud: -72.9423,
-    urlImagen: '',
-    urlVideo: '',
-    estado: 'PENDIENTE',
-    fechaReporte: new Date().toISOString()
-  });
+export const ReporteForm: React.FC<ReporteFormProps> = ({ reporteInicial, onGuardar, onCancelar }) => {
+  // Inicializamos con el reporte a editar, o con valores vacíos si es nuevo
+  const [formData, setFormData] = useState<ReporteBackend>(
+    reporteInicial || {
+      descripcion: '',
+      latitud: -41.4693,
+      longitud: -72.9423,
+      urlImagen: '',
+      urlVideo: '',
+      estado: 'PENDIENTE',
+      fechaReporte: new Date().toISOString()
+    }
+  );
+
+  // Si cambia el reporteInicial (porque hicimos clic en otro), actualizamos el formulario
+  useEffect(() => {
+    if (reporteInicial) {
+      setFormData(reporteInicial);
+    }
+  }, [reporteInicial]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -31,7 +42,9 @@ export const ReporteForm: React.FC<ReporteFormProps> = ({ onGuardar, onCancelar 
 
   return (
     <div className="bg-[#1A1C1E] p-6 rounded-xl border border-white/10 shadow-lg">
-      <h2 className="text-xl font-bold text-white mb-4">Registrar Nuevo Reporte</h2>
+      <h2 className="text-xl font-bold text-white mb-4">
+        {reporteInicial ? 'Editar Reporte' : 'Registrar Nuevo Reporte'} {/* Título dinámico */}
+      </h2>
       
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
