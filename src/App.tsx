@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { api } from './services/api';
 import { ReporteForm } from './components/organisms/ReporteForm';
 import { crearReporte, obtenerReportes } from './services/api';
+import { eliminarReporte } from './services/api';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -157,15 +158,52 @@ export default function App() {
                       <th className="p-4">Estado</th>
                       <th className="p-4">Fecha</th>
                       <th className="p-4">Media</th>
+                      <th className="p-4 text-right">Acciones</th> {/* NUEVA COLUMNA */}
                     </tr>
                   </thead>
                   <tbody className="text-sm text-white/70">
                     {reportes.map(r => (
-                      <tr key={r.id} className="border-t border-white/5 hover:bg-white/5">
+                      <tr key={r.id} className="border-t border-white/5 hover:bg-white/5 transition-colors">
                         <td className="p-4">{r.descripcion}</td>
-                        <td className="p-4"><span className="text-forest">{r.estado}</span></td>
+                        <td className="p-4">
+                          <span className={
+                            r.estado === 'PENDIENTE' ? 'text-yellow-500' : 
+                            r.estado === 'EN_PROCESO' ? 'text-blue-500' : 'text-forest'
+                          }>
+                            {r.estado}
+                          </span>
+                        </td>
                         <td className="p-4 text-xs font-mono">{new Date(r.fechaReporte).toLocaleDateString()}</td>
                         <td className="p-4">🖼️</td>
+                        <td className="p-4 text-right space-x-3">
+                          {/* BOTÓN EDITAR (Lo conectaremos en el siguiente paso) */}
+                          <button 
+                            className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                            onClick={() => console.log("Editar", r.id)}
+                          >
+                            Editar
+                          </button>
+                          
+                          {/* BOTÓN ELIMINAR */}
+                          <button 
+                            className="text-emergency hover:text-red-400 font-medium transition-colors"
+                            onClick={async () => {
+                              if (window.confirm("¿Estás seguro de que deseas eliminar este reporte?")) {
+                                try {
+                                  // 1. Mandamos a borrar a la BD
+                                  await eliminarReporte(r.id!);
+                                  // 2. Recargamos la tabla
+                                  const actualizados = await obtenerReportes();
+                                  setReportes(actualizados);
+                                } catch (error) {
+                                  alert("Error al eliminar el reporte");
+                                }
+                              }
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
