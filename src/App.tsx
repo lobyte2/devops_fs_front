@@ -8,12 +8,14 @@ import { Alerta, ZonaMonitoreo, Historial, Reporte } from './types';
 import { Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from './services/api';
+import { ReporteForm } from './components/organisms/ReporteForm';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('vsol_auth') === 'true');
   const [userEmail, setUserEmail] = useState('brigada@sol.cl');
   const [activeTab, setActiveTab] = useState('alertas');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   // Estados para los datos de los microservicios
   const [alerts, setAlerts] = useState<Alerta[]>([]);
@@ -105,7 +107,36 @@ export default function App() {
       case 'reportes':
         return (
           <div className="p-8">
-            <h2 className="text-xl font-bold text-white mb-6">MS Reportes: Archivos Multimedia</h2>
+            {/* --- CABECERA CON EL TÍTULO Y EL BOTÓN --- */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">MS Reportes: Archivos Multimedia</h2>
+              
+              {!mostrarFormulario && (
+                <button 
+                  onClick={() => setMostrarFormulario(true)}
+                  className="bg-emergency text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-emergency/80 transition-colors"
+                >
+                  + Añadir Reporte
+                </button>
+              )}
+            </div>
+
+            {/* --- EL FORMULARIO APARECE AQUÍ CUANDO HACES CLIC --- */}
+            {mostrarFormulario && (
+              <div className="mb-6">
+                 <ReporteForm 
+                    onGuardar={(nuevo) => {
+                      // Por ahora solo lo imprimimos en consola. 
+                      // Luego lo conectaremos al backend.
+                      console.log("Guardando", nuevo);
+                      setMostrarFormulario(false);
+                    }} 
+                    onCancelar={() => setMostrarFormulario(false)} 
+                 />
+              </div>
+            )}
+
+            {/* --- TU TABLA INTACTA --- */}
             <div className="overflow-hidden rounded-xl border border-white/10 glass">
                <table className="w-full text-left border-collapse">
                   <thead className="bg-white/5 text-[11px] uppercase font-bold text-[#8E8E93]">
@@ -130,7 +161,6 @@ export default function App() {
             </div>
           </div>
         );
-
       default:
         return <div className="p-8 text-white/20 uppercase font-bold tracking-widest text-center mt-20">Sección en Desarrollo (MS Historial)</div>;
     }
