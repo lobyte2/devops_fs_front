@@ -2,16 +2,15 @@ import React from 'react';
 import { MapPin, Clock, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
-import { Alerta } from '../types';
+import { FireAlert } from '../types';
 
 interface AlertCardProps {
-  alert: Alerta;
+  alert: FireAlert;
   index: number;
 }
 
 export const AlertCard: React.FC<AlertCardProps> = ({ alert, index }) => {
-  // Cambiamos alert.status por alert.estado
-  const isPending = alert.estado === 'PENDING';
+  const isPending = alert.status === 'PENDING';
 
   const severityColors = {
     LOW: 'text-green-400 bg-green-400/10',
@@ -35,11 +34,10 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, index }) => {
                   ? "bg-[#F6AD55]/20 text-[#F6AD55] border-[#F6AD55]/30"
                   : "bg-emergency/20 text-emergency border-emergency/30"
           )}>
-            {alert.estado}
+            {alert.status}
           </span>
             <h3 className="text-pure-white font-semibold text-[15px] leading-tight">
-              {/* Cambiamos alert.location por alert.ubicacion */}
-              {alert.ubicacion}
+              {alert.location}
             </h3>
             <p className="text-[13px] text-[#8E8E93] mt-1 leading-normal font-sans">
               {alert.region} • {alert.timestamp}
@@ -54,19 +52,17 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, index }) => {
                 isPending ? "bg-[#F6AD55] shadow-[0_0_8px_#F6AD55]" : "bg-emergency shadow-[0_0_8px_#FF3B30]"
             )} />
             <span className="text-[11px] font-bold text-white/30 uppercase tracking-widest">
-            {/* Cambiamos alert.severity por alert.severidad */}
-            {alert.severidad} INTENSIDAD
+            {alert.severity} INTENSITY
           </span>
           </div>
 
-          {/* Cambiamos alert.reporter por alert.brigadistaEmail */}
-          {alert.brigadistaEmail && (
-              <div className="flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity cursor-help" title={`Reportado por: ${alert.brigadistaEmail}`}>
+          {alert.reporter && (
+              <div className="flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity cursor-help" title={`ID: ${alert.reporter.deviceId} • ${alert.reporter.timestamp}`}>
                 <div className="w-4 h-4 bg-white/10 rounded-full flex items-center justify-center">
                   <CheckCircle2 className="w-2.5 h-2.5 text-white" />
                 </div>
                 <span className="text-[9px] font-mono text-white/50 truncate max-w-[100px]">
-              {alert.brigadistaEmail.split('@')[0]}
+              {alert.reporter.email.split('@')[0]}
             </span>
               </div>
           )}
