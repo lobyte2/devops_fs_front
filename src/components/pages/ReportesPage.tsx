@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ReporteBackend } from '../../types';
-import { obtenerReportes, crearReporte } from '../../services/api';
+import { obtenerReportes, crearReporte, eliminarReporte, actualizarReporte } from '../../services/api';
 import { ReporteForm } from '../organisms/ReporteForm';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 
 export const ReportesPage = () => {
   const [reportes, setReportes] = useState<ReporteBackend[]>([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [reporteAEditar, setReporteAEditar] = useState<ReporteBackend | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -23,60 +25,125 @@ export const ReportesPage = () => {
     }
   };
 
-  const handleGuardarNuevo = async (nuevoReporte: ReporteBackend) => {
+  const handleGuardar = async (reporte: ReporteBackend) => {
     try {
-      // 1. Mandamos el reporte al backend
-      await crearReporte(nuevoReporte);
-      // 2. Ocultamos el formulario
+      if (reporteAEditar) {
+        await actualizarReporte(reporte);
+        alert("Reporte actualizado con éxito!");
+      } else {
+        await crearReporte(reporte);
+        alert("Reporte creado con éxito!");
+      }
       setMostrarFormulario(false);
-      // 3. Recargamos la lista para ver el nuevo reporte
+      setReporteAEditar(null);
       cargarDatos();
-      alert("Reporte creado con éxito!");
     } catch (error) {
       alert("Error al guardar en el servidor");
     }
   };
 
+  const handleEditar = (reporte: ReporteBackend) => {
+    setReporteAEditar(reporte);
+    setMostrarFormulario(true);
+  };
+
+  const handleEliminar = async (id: string | number | undefined) => {
+    if (!id) return;
+    
+    if (window.confirm("¿Estás seguro de que deseas eliminar este reporte?")) {
+      try {
+        await eliminarReporte(id);
+        cargarDatos();
+      } catch (error) {
+        alert("Error al eliminar el reporte");
+      }
+    }
+  };
+
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Panel de Reportes</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-pure-white tracking-tight">Gestión de Reportes</h1>
         
-        {/* EL BOTÓN MÁGICO */}
         {!mostrarFormulario && (
           <button 
-            onClick={() => setMostrarFormulario(true)}
-            className="bg-red-600 text-white font-bold px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors"
+            onClick={() => {
+              setReporteAEditar(null);
+              setMostrarFormulario(true);
+            }}
+            className="flex items-center gap-2 bg-emergency text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-emergency/20 hover:bg-emergency/80 transition-all uppercase text-xs tracking-widest"
           >
-            + Añadir Reporte
+            <Plus className="w-4 h-4" />
+            Nuevo Reporte
           </button>
         )}
       </div>
 
-      {/* Si mostrarFormulario es TRUE, dibujamos el Organismo */}
       {mostrarFormulario && (
-        <ReporteForm 
-          onGuardar={handleGuardarNuevo} 
-          onCancelar={() => setMostrarFormulario(false)} 
-        />
+        <div className="mb-10">
+          <ReporteForm 
+            reporteInicial={reporteAEditar}
+            onGuardar={handleGuardar} 
+            onCancelar={() => {
+              setMostrarFormulario(false);
+              setReporteAEditar(null);
+            }} 
+          />
+        </div>
       )}
 
-      {/* Lista de Reportes */}
       {cargando ? (
-        <p>Cargando datos...</p>
+        <div className="flex items-center gap-3 text-white/50">
+          <div className="w-4 h-4 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+          <p className="text-sm font-medium">Cargando reportes...</p>
+        </div>
       ) : (
         <div className="grid gap-4">
           {reportes.map((reporte) => (
-            <div key={reporte.id} className="bg-white p-4 rounded-xl shadow border-l-4 border-red-500 flex justify-between">
-              <div>
-                <h3 className="font-bold text-lg">{reporte.descripcion}</h3>
-                <p className="text-sm text-gray-500">
-                  Estado: <span className="font-semibold text-orange-600">{reporte.estado}</span> | 
-                  Ubicación: {reporte.latitud}, {reporte.longitud}
-                </p>
+            <div 
+              key={reporte.id} 
+              className="bg-white/[0.04] border border-white/10 p-5 rounded-2xl flex justify-between items-center group hover:bg-white/[0.06] transition-all duration-300"
+            >
+              {/* Información del reporte en modo oscuro */}
+              <div className="flex flex-col gap-1">
+                <h3 className="font-bold text-[16px] text-pure-white leading-tight">
+                  {reporte.descripcion}
+                </h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black bg-emergency/20 text-emergency px-2 py-0.5 rounded-md uppercase tracking-wider">
+                    {reporte.estado}
+                  </span>
+                  <p className="text-[12px] text-white/40 font-medium">
+                    Lat: {reporte.latitud} • Lon: {reporte.longitud}
+                  </p>
+                </div>
+              </div>
+
+              {/* Botones de acción con estilo oscuro */}
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleEditar(reporte)}
+                  className="p-2.5 bg-white/5 text-white/40 hover:text-pure-white hover:bg-white/10 rounded-xl transition-all"
+                  title="Editar"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => handleEliminar(reporte.id)}
+                  className="p-2.5 bg-white/5 text-white/40 hover:text-emergency hover:bg-emergency/10 rounded-xl transition-all"
+                  title="Eliminar"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}
+
+          {reportes.length === 0 && !cargando && (
+            <div className="text-white/20 text-center py-16 border-2 border-dashed border-white/5 rounded-3xl">
+              <p className="text-sm font-medium">No hay reportes activos en el sistema</p>
+            </div>
+          )}
         </div>
       )}
     </div>

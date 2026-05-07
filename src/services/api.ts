@@ -24,15 +24,17 @@ export const crearReporte = async (nuevoReporte: ReporteBackend): Promise<Report
   return await response.json();
 };
 
-export const eliminarReporte = async (id: string): Promise<void> => {
+// MODIFICADO: Acepta number o string para evitar errores de tipado
+export const eliminarReporte = async (id: number | string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/reportes/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Error al eliminar el reporte');
 };
 
-export const actualizarReporte = async (id: string, reporte: ReporteBackend): Promise<ReporteBackend> => {
-  const response = await fetch(`${API_BASE_URL}/reportes/${id}`, {
+// MODIFICADO: Recibe el reporte completo y extrae el ID directamente
+export const actualizarReporte = async (reporte: ReporteBackend): Promise<ReporteBackend> => {
+  const response = await fetch(`${API_BASE_URL}/reportes/${reporte.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
