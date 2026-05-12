@@ -5,6 +5,8 @@ import { AlertCard } from './components/AlertCard';
 import { StatsPanel } from './components/StatsPanel';
 import { Login } from './components/Login';
 import { ReportesPage } from './components/pages/ReportesPage';
+import { AlertasPage } from './components/pages/AlertasPage'; // <-- Nueva importación
+import { HistorialPage } from './components/pages/HistorialPage'; // <-- Nueva importación
 import { FireAlert, UserRole } from './types';
 import { Sun, Moon, MapPin, ShieldCheck, AlertTriangle, Info } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
@@ -221,6 +223,8 @@ export default function App() {
               </>
             )}
 
+            {/* --- SECCIÓN DE PESTAÑAS MODIFICADA --- */}
+            
             {activeTab === 'reportes' && (
               <div className="flex-1 overflow-y-auto">
                 <ReportesPage />
@@ -228,16 +232,18 @@ export default function App() {
             )}
 
             {activeTab === 'alertas' && (
-              <div className="flex-1 flex flex-col items-center justify-center text-white/50">
-                <h2>Vista de Alertas</h2>
+              <div className="flex-1 overflow-y-auto">
+                <AlertasPage />
               </div>
             )}
 
             {activeTab === 'historial' && (
-              <div className="flex-1 flex flex-col items-center justify-center text-white/50">
-                <h2>Historial de Incidentes</h2>
+              <div className="flex-1 overflow-y-auto">
+                <HistorialPage />
               </div>
             )}
+            
+            {/* -------------------------------------- */}
           </div>
         </main>
 
