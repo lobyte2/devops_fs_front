@@ -1,7 +1,5 @@
 export type AlertStatus = 'PENDING' | 'CONFIRMED';
 export type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type AlertStatus = 'PENDING' | 'CONFIRMED';
-export type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type UserRole = 'ADMIN' | 'USER';
 
@@ -25,7 +23,6 @@ export interface Alerta {
   brigadistaEmail: string;
 }
 
-
 export interface ZonaMonitoreo {
   id?: number;
   nombreZona: string;
@@ -38,6 +35,7 @@ export interface ZonaMonitoreo {
 export interface Historial {
   id?: number;
   ubicación: string; 
+  causaProbable: string; // agregue la causa
   fechaInicio: string;
   fechaFin: string;
   hectareasAfectadas: number;

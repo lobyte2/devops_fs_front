@@ -1,4 +1,3 @@
-// src/components/pages/HistorialPage.tsx
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import { Historial } from '../../types';
@@ -35,6 +34,7 @@ export const HistorialPage = () => {
           <thead className="bg-white/[0.02] border-b border-white/[0.08]">
             <tr className="text-[12px] font-bold text-[#8E8E93] uppercase tracking-wider">
               <th className="p-4">Ubicación</th>
+              <th className="p-4">Causa Probable</th> {/* Nueva Columna */}
               <th className="p-4">Fecha Inicio</th>
               <th className="p-4">Fecha Fin</th>
               <th className="p-4">Hectáreas Afectadas</th>
@@ -44,6 +44,7 @@ export const HistorialPage = () => {
             {historial.map((item) => (
               <tr key={item.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors text-[14px]">
                 <td className="p-4 font-medium text-pure-white">{item.ubicación}</td>
+                <td className="p-4 text-white/70">{item.causaProbable}</td> {/* Nuevo Dato */}
                 <td className="p-4 text-white/70">{new Date(item.fechaInicio).toLocaleDateString()}</td>
                 <td className="p-4 text-white/70">{new Date(item.fechaFin).toLocaleDateString()}</td>
                 <td className="p-4">
@@ -56,7 +57,7 @@ export const HistorialPage = () => {
 
             {historial.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-8 text-center text-white/50">
+                <td colSpan={5} className="p-8 text-center text-white/50">
                   No hay registros en el historial de incidentes.
                 </td>
               </tr>
