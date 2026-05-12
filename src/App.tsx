@@ -13,7 +13,6 @@ import { Sun, Moon, MapPin, ShieldCheck, AlertTriangle, Info } from 'lucide-reac
 import { AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 
-// Mocks actualizados a la nueva estructura de la base de datos
 const mockAlerts: FireAlert[] = [
   {
     id: 'INC-0824',
@@ -50,21 +49,19 @@ export default function App() {
   const [alerts, setAlerts] = React.useState<FireAlert[]>(mockAlerts);
   const [activeTab, setActiveTab] = React.useState('monitoreo');
 
-  // Cargar las alertas reales desde el backend
   useEffect(() => {
     if (isAuthenticated) {
       const cargarAlertasReales = async () => {
         try {
           const data = await api.getAlertas();
           if (data && data.length > 0) {
-            // Transformamos las alertas del backend al formato del frontend
             const alertasReales: FireAlert[] = data.map(a => ({
               id: a.id || Math.random(),
               tipoAlerta: a.tipoAlerta,
               mensaje: a.mensaje,
               severidad: a.severidad,
               fechaCreacion: a.fechaCreacion,
-              coordinates: [-70.64, -33.43] // Coordenadas por defecto para el mapa
+              coordinates: [-70.64, -33.43] 
             }));
             setAlerts(alertasReales);
           }
@@ -107,7 +104,6 @@ export default function App() {
     setAlerts([newAlert, ...alerts]);
   };
 
-  // Función para remover la alerta de la vista cuando se finaliza
   const handleAlertaResuelta = (idResuelta: string | number) => {
     setAlerts((prevAlerts) => prevAlerts.filter(a => a.id !== idResuelta));
   };
@@ -209,7 +205,8 @@ export default function App() {
                   </div>
 
                   <div className="flex-1 min-h-[500px]">
-                    <FireMap alerts={alerts} />
+                    {/* FireMap ahora es independiente y no recibe la prop alerts */}
+                    <FireMap />
                   </div>
 
                   {userRole === 'ADMIN' && <StatsPanel />}
