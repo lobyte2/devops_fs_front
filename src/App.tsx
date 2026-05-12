@@ -1,57 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { FireMap } from './components/FireMap';
 import { AlertCard } from './components/AlertCard';
 import { StatsPanel } from './components/StatsPanel';
 import { Login } from './components/Login';
 import { ReportesPage } from './components/pages/ReportesPage';
-import { AlertasPage } from './components/pages/AlertasPage'; // <-- Nueva importación
-import { HistorialPage } from './components/pages/HistorialPage'; // <-- Nueva importación
+import { AlertasPage } from './components/pages/AlertasPage';
+import { HistorialPage } from './components/pages/HistorialPage';
 import { FireAlert, UserRole } from './types';
+import { api } from './services/api';
 import { Sun, Moon, MapPin, ShieldCheck, AlertTriangle, Info } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 
+// Mocks actualizados a la nueva estructura de la base de datos
 const mockAlerts: FireAlert[] = [
   {
     id: 'INC-0824',
-    location: 'Cerro La Campana',
-    region: 'Valparaíso',
-    status: 'PENDING',
-    severity: 'HIGH',
-    timestamp: 'Hace 12 min',
+    tipoAlerta: 'Incendio Forestal',
+    mensaje: 'Cerro La Campana - Valparaíso',
+    severidad: 'HIGH',
+    fechaCreacion: new Date().toISOString(),
     coordinates: [-71.12, -32.95],
-    reporter: { email: 'b.guerrero@brigada.cl', deviceId: 'IPH-9422', timestamp: '2024-04-22 14:12' }
+    reporter: { email: 'b.guerrero@brigada.cl', deviceId: 'IPH-9422', timestamp: '14:12' }
   },
   {
     id: 'INC-0841',
-    location: 'Cajón del Maipo',
-    region: 'Metropolitana',
-    status: 'PENDING',
-    severity: 'CRITICAL',
-    timestamp: 'Hace 5 min',
+    tipoAlerta: 'Foco de Calor',
+    mensaje: 'Cajón del Maipo - Metropolitana',
+    severidad: 'CRITICAL',
+    fechaCreacion: new Date().toISOString(),
     coordinates: [-70.35, -33.65],
-    reporter: { email: 'm.flores@emergencias.cl', deviceId: 'AND-2210', timestamp: '2024-04-22 14:19' }
-  },
-  {
-    id: 'INC-0792',
-    location: 'Parque Nacional Radal',
-    region: 'Maule',
-    status: 'CONFIRMED',
-    severity: 'MEDIUM',
-    timestamp: 'Hace 2 horas',
-    coordinates: [-70.98, -35.48],
-    reporter: { email: 'central.maule@institucion.cl', deviceId: 'WEB-4821', timestamp: '2024-04-22 12:44' }
-  },
-  {
-    id: 'INC-0755',
-    location: 'Huasco Alto',
-    region: 'Atacama',
-    status: 'CONFIRMED',
-    severity: 'LOW',
-    timestamp: 'Hace 5 horas',
-    coordinates: [-70.58, -28.58],
-    reporter: { email: 'u.atacama@brigada.cl', deviceId: 'TAB-5512', timestamp: '2024-04-22 09:30' }
+    reporter: { email: 'm.flores@emergencias.cl', deviceId: 'AND-2210', timestamp: '14:19' }
   }
 ];
 
@@ -66,8 +46,35 @@ export default function App() {
   const [userEmail, setUserEmail] = React.useState(() => {
     return localStorage.getItem('vsol_remembered_email') || 'brigada@sol.cl';
   });
+  
   const [alerts, setAlerts] = React.useState<FireAlert[]>(mockAlerts);
   const [activeTab, setActiveTab] = React.useState('monitoreo');
+
+  // Cargar las alertas reales desde el backend
+  useEffect(() => {
+    if (isAuthenticated) {
+      const cargarAlertasReales = async () => {
+        try {
+          const data = await api.getAlertas();
+          if (data && data.length > 0) {
+            // Transformamos las alertas del backend al formato del frontend
+            const alertasReales: FireAlert[] = data.map(a => ({
+              id: a.id || Math.random(),
+              tipoAlerta: a.tipoAlerta,
+              mensaje: a.mensaje,
+              severidad: a.severidad,
+              fechaCreacion: a.fechaCreacion,
+              coordinates: [-70.64, -33.43] // Coordenadas por defecto para el mapa
+            }));
+            setAlerts(alertasReales);
+          }
+        } catch (error) {
+          console.error("No se pudieron cargar las alertas del backend:", error);
+        }
+      };
+      cargarAlertasReales();
+    }
+  }, [isAuthenticated]);
 
   const handleLogin = (email: string, role: UserRole) => {
     localStorage.setItem('vsol_auth', 'true');
@@ -86,11 +93,10 @@ export default function App() {
   const handleCreateReport = () => {
     const newAlert: FireAlert = {
       id: `INC-${Math.floor(Math.random() * 9000) + 1000}`,
-      location: 'Ubicación Manual',
-      region: 'Zona Centro',
-      status: 'PENDING',
-      severity: 'MEDIUM',
-      timestamp: 'Ahora mismo',
+      tipoAlerta: 'Reporte Manual',
+      mensaje: 'Ubicación Manual - Zona Centro',
+      severidad: 'MEDIUM',
+      fechaCreacion: new Date().toISOString(),
       coordinates: [-70.64, -33.43],
       reporter: {
         email: userEmail,
@@ -99,6 +105,11 @@ export default function App() {
       }
     };
     setAlerts([newAlert, ...alerts]);
+  };
+
+  // Función para remover la alerta de la vista cuando se finaliza
+  const handleAlertaResuelta = (idResuelta: string | number) => {
+    setAlerts((prevAlerts) => prevAlerts.filter(a => a.id !== idResuelta));
   };
 
   if (!isAuthenticated) {
@@ -166,7 +177,7 @@ export default function App() {
                   <div className="grid grid-cols-4 gap-6">
                     {userRole === 'ADMIN' ? (
                         [
-                          { label: 'Focos Activos', val: '24', sub: '+3 nuevo hoy', color: 'text-emergency' },
+                          { label: 'Focos Activos', val: alerts.length.toString(), sub: 'Detectados', color: 'text-emergency' },
                           { label: 'Hectáreas Afectadas', val: '1,420', sub: 'Zona Central', color: 'text-pure-white' },
                           { label: 'Brigadas Desplegadas', val: '42', sub: '85% capacidad', color: 'text-forest' },
                           { label: 'Tiempo Resp. Prom.', val: '14m', sub: 'Reducción de 2m', color: 'text-pure-white' },
@@ -209,7 +220,13 @@ export default function App() {
                   <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
                     <AnimatePresence mode="popLayout" initial={false}>
                       {alerts.map((alert, i) => (
-                          <AlertCard key={alert.id} alert={alert} index={i} />
+                          <AlertCard 
+                            key={alert.id} 
+                            alert={alert} 
+                            index={i} 
+                            userRole={userRole} 
+                            onResolve={handleAlertaResuelta} 
+                          />
                       ))}
                     </AnimatePresence>
                   </div>
@@ -223,8 +240,6 @@ export default function App() {
               </>
             )}
 
-            {/* --- SECCIÓN DE PESTAÑAS MODIFICADA --- */}
-            
             {activeTab === 'reportes' && (
               <div className="flex-1 overflow-y-auto">
                 <ReportesPage />
@@ -242,8 +257,6 @@ export default function App() {
                 <HistorialPage />
               </div>
             )}
-            
-            {/* -------------------------------------- */}
           </div>
         </main>
 

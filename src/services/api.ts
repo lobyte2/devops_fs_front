@@ -45,6 +45,42 @@ export const actualizarReporte = async (reporte: ReporteBackend): Promise<Report
   return await response.json();
 };
 
+// NUEVA FUNCIÓN: Finaliza la alerta y crea el historial automáticamente
+export const finalizarAlertaYCrearHistorial = async (
+  alertaId: string | number, 
+  ubicacion: string, 
+  causa: string, 
+  hectareas: number,
+  fechaInicioIncidente: string
+): Promise<void> => {
+  // 1. Preparamos el objeto para MS-HISTORIAL
+  const nuevoHistorial = {
+    ubicación: ubicacion,
+    causaProbable: causa,
+    fechaInicio: new Date(fechaInicioIncidente).toISOString(),
+    fechaFin: new Date().toISOString(), // Fecha actual como fin del incidente
+    hectareasAfectadas: hectareas
+  };
+
+  // 2. Enviamos el POST automático al microservicio de Historial
+  const respuestaHistorial = await fetch(`${API_BASE_URL}/historial`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(nuevoHistorial),
+  });
+
+  if (!respuestaHistorial.ok) throw new Error('Error al generar el historial automático');
+
+  // 3. Eliminamos la alerta de MS-ALERTAS (ya que fue resuelta)
+  try {
+    await fetch(`${API_BASE_URL}/alertas/${alertaId}`, { 
+      method: 'DELETE' 
+    });
+  } catch (error) {
+    console.warn("La alerta solo existía en el mock frontend o falló el borrado", error);
+  }
+};
+
 export const api = {
   // --- USUARIOS ---
   login: async (email: string, password: string): Promise<Usuario> => {

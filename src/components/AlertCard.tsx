@@ -1,23 +1,52 @@
-import React from 'react';
-import { MapPin, Clock, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn } from '../lib/utils';
 import { FireAlert } from '../types';
+import { finalizarAlertaYCrearHistorial } from '../services/api';
 
 interface AlertCardProps {
   alert: FireAlert;
   index: number;
+  userRole?: string; // Evita el error con App.tsx
+  onResolve?: (id: string | number) => void;
 }
 
-export const AlertCard: React.FC<AlertCardProps> = ({ alert, index }) => {
-  const isPending = alert.status === 'PENDING';
+export const AlertCard: React.FC<AlertCardProps> = ({ alert, index, onResolve }) => {
+  const [isResolving, setIsResolving] = useState(false);
+  const [causa, setCausa] = useState('');
+  const [hectareas, setHectareas] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const severityColors = {
-    LOW: 'text-green-400 bg-green-400/10',
-    MEDIUM: 'text-yellow-400 bg-yellow-400/10',
-    HIGH: 'text-orange-400 bg-orange-400/10',
-    CRITICAL: 'text-emergency bg-emergency/10'
+  const handleFinalizar = async () => {
+    if (!causa || !hectareas) {
+      window.alert("Por favor, ingresa la causa y las hectáreas afectadas.");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await finalizarAlertaYCrearHistorial(
+        alert.id,
+        alert.mensaje,
+        causa,
+        Number(hectareas),
+        alert.fechaCreacion
+      );
+      
+      if (onResolve) {
+        onResolve(alert.id);
+      }
+    } catch (error) {
+      console.error("Error finalizando alerta:", error);
+      window.alert("Hubo un error al conectar con el backend.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const formattedDate = alert.fechaCreacion 
+    ? new Date(alert.fechaCreacion).toLocaleString('es-CL', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' })
+    : 'Sin fecha';
 
   return (
       <motion.div
@@ -28,45 +57,65 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, index }) => {
       >
         <div className="flex justify-between items-start mb-3">
           <div>
-          <span className={cn(
-              "inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold tracking-wider uppercase mb-3",
-              isPending
-                  ? "bg-[#F6AD55]/20 text-[#F6AD55] border-[#F6AD55]/30"
-                  : "bg-emergency/20 text-emergency border-emergency/30"
-          )}>
-            {alert.status}
-          </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold tracking-wider uppercase mb-3 bg-emergency/20 text-emergency border-emergency/30">
+              ACTIVA
+            </span>
             <h3 className="text-pure-white font-semibold text-[15px] leading-tight">
-              {alert.location}
+              {alert.tipoAlerta}
             </h3>
-            <p className="text-[13px] text-[#8E8E93] mt-1 leading-normal font-sans">
-              {alert.region} • {alert.timestamp}
+            <p className="text-[13px] text-[#8E8E93] mt-1 leading-normal font-sans line-clamp-2">
+              {alert.mensaje} • {formattedDate}
             </p>
           </div>
         </div>
 
         <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
           <div className="flex items-center gap-2">
-            <div className={cn(
-                "w-1.5 h-1.5 rounded-full",
-                isPending ? "bg-[#F6AD55] shadow-[0_0_8px_#F6AD55]" : "bg-emergency shadow-[0_0_8px_#FF3B30]"
-            )} />
+            <div className="w-1.5 h-1.5 rounded-full bg-emergency shadow-[0_0_8px_#FF3B30]" />
             <span className="text-[11px] font-bold text-white/30 uppercase tracking-widest">
-            {alert.severity} INTENSITY
-          </span>
-          </div>
-
-          {alert.reporter && (
-              <div className="flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity cursor-help" title={`ID: ${alert.reporter.deviceId} • ${alert.reporter.timestamp}`}>
-                <div className="w-4 h-4 bg-white/10 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="w-2.5 h-2.5 text-white" />
-                </div>
-                <span className="text-[9px] font-mono text-white/50 truncate max-w-[100px]">
-              {alert.reporter.email.split('@')[0]}
+              {alert.severidad} INTENSITY
             </span>
-              </div>
+          </div>
+          {alert.reporter && (
+            <div className="flex items-center gap-1.5 opacity-40">
+              <CheckCircle2 className="w-3 h-3 text-white" />
+              <span className="text-[9px] text-white/50">{alert.reporter.email.split('@')[0]}</span>
+            </div>
           )}
         </div>
+
+        {/* --- ÁREA DE FINALIZACIÓN INTERACTIVA --- */}
+        {isResolving ? (
+          <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-3">
+            <input
+              type="text"
+              placeholder="Causa probable..."
+              value={causa}
+              onChange={(e) => setCausa(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white focus:outline-none focus:border-white/30"
+            />
+            <input
+              type="number"
+              placeholder="Hectáreas afectadas..."
+              value={hectareas}
+              onChange={(e) => setHectareas(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white focus:outline-none focus:border-white/30"
+            />
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setIsResolving(false)} className="flex-1 py-2 rounded-lg bg-white/5 text-[11px] text-white/70 uppercase font-bold">Cancelar</button>
+              <button onClick={handleFinalizar} disabled={loading} className="flex-1 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-[11px] uppercase font-bold transition-all">
+                {loading ? '...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsResolving(true)}
+            className="mt-4 w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[12px] font-bold uppercase tracking-wider transition-colors shadow-lg shadow-blue-500/20"
+          >
+            Finalizar Incidente
+          </button>
+        )}
       </motion.div>
   );
 }

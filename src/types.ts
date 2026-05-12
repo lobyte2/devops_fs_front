@@ -11,16 +11,13 @@ export interface Usuario {
   password?: string;
 }
 
+// ACTUALIZADO: Coincide con el JSON del backend de Alertas
 export interface Alerta {
-  id: string;
-  ubicacion: string;
-  region: string;
-  estado: AlertStatus;
-  severidad: AlertSeverity;
-  timestamp: string;
-  latitud: number;
-  longitud: number;
-  brigadistaEmail: string;
+  id?: number;
+  tipoAlerta: string;
+  mensaje: string;
+  severidad: string;
+  fechaCreacion: string;
 }
 
 export interface ZonaMonitoreo {
@@ -63,14 +60,14 @@ export interface ReporteBackend {
   fechaReporte: string;
 }
 
+// ACTUALIZADO: Para que el AlertCard lea los datos correctamente
 export interface FireAlert {
-  id: string;
-  location: string;
-  region: string;
-  status: AlertStatus;
-  severity: AlertSeverity;
-  timestamp: string;
-  coordinates: [number, number];
+  id: string | number;
+  tipoAlerta: string;
+  mensaje: string;
+  severidad: string;
+  fechaCreacion: string;
+  coordinates?: [number, number]; // Opcional por si el FireMap lo necesita
   reporter?: {
     email: string;
     deviceId: string;
