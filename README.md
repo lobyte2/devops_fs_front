@@ -23,19 +23,19 @@ Antes de comenzar, asegúrate de tener instalado:
 Sigue estos pasos en tu terminal para poner en marcha la interfaz:
 
 ### 1. Instalar dependencias
-Navega hasta la carpeta del proyecto (`fron_semestralFS3`) y ejecuta el siguiente comando para descargar todas las librerías necesarias:
+Navega hasta la carpeta del proyecto (`fron_semestralFS3`) en Visual Studio Code y ejecuta el siguiente comando en la terminal para descargar todas las librerías necesarias:
 ```bash
 npm install
 ```
 
 ### 2. Iniciar Frontend
-Una vez instalado el npm, ir a la terminal y ingresar este comando:
+Una vez instalado el npm, ir a la terminal y ingresar este comando e ingresar al link que aparezca en la terminal:
 ```bash
 npm run dev
 ```
 
 ### 3. Apagar Frontend
-Si quieres apagar el frontend debes presionar estas teclas:
+Si quieres apagar el frontend debes presionar estas teclas en la terminal:
 ```bash
 CONTROL+C
 ```
