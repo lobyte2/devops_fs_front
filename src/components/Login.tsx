@@ -2,8 +2,8 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Flame, Mail, Lock, ArrowRight, UserCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '../lib/utils';
-
 import { FireAlert, UserRole } from '../types';
+import { api } from '../services/api'; // <-- Importamos la API real
 
 interface LoginProps {
     onLogin: (email: string, role: UserRole) => void;
@@ -12,7 +12,8 @@ interface LoginProps {
 export function Login({ onLogin }: LoginProps) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const [role, setRole] = React.useState<UserRole>('ADMIN');
+    // El estado del rol visual se mantiene para la UI, pero el rol real vendrá del backend
+    const [role, setRole] = React.useState<UserRole>('ADMIN'); 
     const [isLoading, setIsLoading] = React.useState(false);
     const [isRemembered, setIsRemembered] = React.useState(false);
     const [rememberedEmail, setRememberedEmail] = React.useState('');
@@ -26,15 +27,36 @@ export function Login({ onLogin }: LoginProps) {
         }
     }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // <-- MÉTODO ACTUALIZADO PARA VALIDAR LA PESTAÑA CON EL BACKEND
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulación de autenticación
-        setTimeout(() => {
-            localStorage.setItem('vsol_remembered_email', email);
-            onLogin(email, role);
+        
+        try {
+            // 1. Llamada real de Autenticación al backend
+            const userData = await api.login(email, password);
+            
+            // 2. ¡NUEVO! Validamos que el rol de la Base de Datos coincida con la pestaña seleccionada
+            if (userData.rol !== role) {
+                // Si eligió mal la pestaña, lo bloqueamos
+                const nombreRolPantalla = role === 'ADMIN' ? 'Brigadista' : 'Comunidad';
+                alert(`Acceso denegado: Esta cuenta no tiene permisos de ${nombreRolPantalla}. Por favor, selecciona la pestaña correcta.`);
+                setIsLoading(false);
+                return; // Cortamos la ejecución aquí, no lo dejamos pasar
+            }
+            
+            // 3. Si las credenciales y la pestaña son correctas, recordamos el email localmente
+            localStorage.setItem('vsol_remembered_email', userData.email);
+            
+            // Iniciamos sesión inyectando el ROL REAL entregado por el backend (Autorización)
+            onLogin(userData.email, userData.rol as UserRole);
+            
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error);
+            alert("Error de acceso: Credenciales incorrectas");
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
 
     const handleSwitchAccount = () => {
