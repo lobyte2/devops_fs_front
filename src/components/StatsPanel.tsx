@@ -86,7 +86,7 @@ export function StatsPanel() {
                 />
                 <Bar
                     dataKey="wind"
-                    fill="#34C759"
+                    fill="#FF3B30"
                     radius={[4, 4, 0, 0]}
                     barSize={20}
                 />

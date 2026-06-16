@@ -118,7 +118,8 @@ export function Login({ onLogin }: LoginProps) {
                             onClick={() => setRole('USER')}
                             className={cn(
                                 "flex-1 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all",
-                                role === 'USER' ? "bg-forest text-white shadow-lg" : "text-white/40 hover:text-white"
+                                /* ACÁ ESTÁ EL CAMBIO: de bg-forest a bg-emergency */
+                                role === 'USER' ? "bg-emergency text-white shadow-lg" : "text-white/40 hover:text-white"
                             )}
                         >
                             Comunidad
