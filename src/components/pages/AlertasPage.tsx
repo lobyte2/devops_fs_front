@@ -7,6 +7,9 @@ export const AlertasPage = () => {
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Leemos el rol actual del usuario para restringir acciones
+  const userRole = localStorage.getItem('vsol_role') || 'ADMIN';
+
   // Estados para el formulario de finalización
   const [resolvingId, setResolvingId] = useState<number | string | null>(null);
   const [causa, setCausa] = useState('');
@@ -96,47 +99,50 @@ export const AlertasPage = () => {
               </div>
             </div>
             
-            <div className="pt-4 border-t border-white/[0.06]">
-              {resolvingId === alerta.id ? (
-                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                  <input
-                    type="text"
-                    placeholder="Causa del incidente..."
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500/50"
-                    onChange={(e) => setCausa(e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Hectáreas afectadas..."
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500/50"
-                    onChange={(e) => setHectareas(e.target.value)}
-                  />
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleFinalizar(alerta)}
-                      disabled={actionLoading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-xs font-bold text-white uppercase transition-colors"
-                    >
-                      {actionLoading ? 'Procesando...' : 'Confirmar'}
-                    </button>
-                    <button 
-                      onClick={() => setResolvingId(null)}
-                      className="px-3 bg-white/5 hover:bg-white/10 rounded-lg text-white/50"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+            {/* --- ÁREA DE ACCIONES (SOLO ADMIN) --- */}
+            {userRole === 'ADMIN' && (
+              <div className="pt-4 border-t border-white/[0.06]">
+                {resolvingId === alerta.id ? (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <input
+                      type="text"
+                      placeholder="Causa del incidente..."
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-red-500/50 transition-colors"
+                      onChange={(e) => setCausa(e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Hectáreas afectadas..."
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-red-500/50 transition-colors"
+                      onChange={(e) => setHectareas(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleFinalizar(alerta)}
+                        disabled={actionLoading}
+                        className="flex-1 bg-red-600 hover:bg-red-700 py-2 rounded-lg text-xs font-bold text-white uppercase transition-colors"
+                      >
+                        {actionLoading ? 'Procesando...' : 'Confirmar'}
+                      </button>
+                      <button 
+                        onClick={() => setResolvingId(null)}
+                        className="px-3 bg-white/5 hover:bg-white/10 rounded-lg text-white/50 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <button 
-                  onClick={() => setResolvingId(alerta.id!)}
-                  className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-bold text-[12px] uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-forest" />
-                  Finalizar Incidente
-                </button>
-              )}
-            </div>
+                ) : (
+                  <button 
+                    onClick={() => setResolvingId(alerta.id!)}
+                    className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-bold text-[12px] uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-forest" />
+                    Finalizar Incidente
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         ))}
 

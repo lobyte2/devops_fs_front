@@ -227,12 +227,14 @@ export default function App() {
                       ))}
                     </AnimatePresence>
                   </div>
-                  <button
-                    onClick={handleCreateReport}
-                    className="w-full py-3 rounded-xl bg-emergency/10 border border-emergency/30 text-emergency font-bold text-[13px] hover:bg-emergency hover:text-pure-white transition-all duration-300 shadow-xl shadow-emergency/5 uppercase tracking-wider"
-                  >
-                    {userRole === 'ADMIN' ? 'Declarar Nueva Emergencia' : 'Reportar Avistamiento'}
-                  </button>
+                  {userRole === 'ADMIN' && (
+                    <button
+                      onClick={handleCreateReport}
+                      className="w-full py-3 rounded-xl bg-emergency/10 border border-emergency/30 text-emergency font-bold text-[13px] hover:bg-emergency hover:text-pure-white transition-all duration-300 shadow-xl shadow-emergency/5 uppercase tracking-wider"
+                    >
+                      Declarar Nueva Emergencia
+                    </button>
+                  )}
                 </aside>
               </>
             )}

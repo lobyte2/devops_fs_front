@@ -27,6 +27,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onLogout, activeTab, onTabChange }: SidebarProps) {
+  // Leemos el rol del usuario actual desde localStorage
+  const userRole = localStorage.getItem('vsol_role') || 'ADMIN';
+
   return (
       <aside className="w-[240px] h-screen bg-dark-bg border-r border-white/10 flex flex-col p-6 z-50">
         <div className="flex items-center gap-3 mb-10">
@@ -44,24 +47,29 @@ export function Sidebar({ onLogout, activeTab, onTabChange }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1">
-          {navItems.map((item) => (
-              <button
-                  key={item.id}
-                  onClick={() => onTabChange(item.id)} // Llamamos a la función del padre
-                  className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group text-sm font-medium",
-                      activeTab === item.id
-                          ? "bg-white/[0.08] text-pure-white"
-                          : "text-[#8E8E93] hover:bg-white/[0.04] hover:text-pure-white"
-                  )}
-              >
-                <item.icon className={cn(
-                    "w-4 h-4 transition-colors duration-200",
-                    activeTab === item.id ? "text-pure-white" : "text-[#8E8E93]"
-                )} />
-                <span>{item.label}</span>
-              </button>
-          ))}
+          {navItems.map((item) => {
+              // Si el usuario no es ADMIN y la pestaña es 'reportes', no la mostramos
+              if (item.id === 'reportes' && userRole !== 'ADMIN') return null;
+
+              return (
+                  <button
+                      key={item.id}
+                      onClick={() => onTabChange(item.id)} // Llamamos a la función del padre
+                      className={cn(
+                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group text-sm font-medium",
+                          activeTab === item.id
+                              ? "bg-white/[0.08] text-pure-white"
+                              : "text-[#8E8E93] hover:bg-white/[0.04] hover:text-pure-white"
+                      )}
+                  >
+                    <item.icon className={cn(
+                        "w-4 h-4 transition-colors duration-200",
+                        activeTab === item.id ? "text-pure-white" : "text-[#8E8E93]"
+                    )} />
+                    <span>{item.label}</span>
+                  </button>
+              );
+          })}
         </nav>
 
         <div className="mt-auto pt-6 border-t border-white/10 space-y-1">
