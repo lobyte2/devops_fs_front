@@ -24,9 +24,10 @@ interface SidebarProps {
     onLogout: () => void;
     activeTab: string;
     onTabChange: (tabId: string) => void;
+    onSettingsClick: () => void;
 }
 
-export function Sidebar({ onLogout, activeTab, onTabChange }: SidebarProps) {
+export function Sidebar({ onLogout, activeTab, onTabChange, onSettingsClick }: SidebarProps) {
   // Leemos el rol del usuario actual desde localStorage
   const userRole = localStorage.getItem('vsol_role') || 'ADMIN';
 
@@ -73,7 +74,10 @@ export function Sidebar({ onLogout, activeTab, onTabChange }: SidebarProps) {
         </nav>
 
         <div className="mt-auto pt-6 border-t border-white/10 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#8E8E93] hover:bg-white/[0.04] hover:text-pure-white transition-all group font-medium text-sm">
+          <button 
+            onClick={onSettingsClick}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#8E8E93] hover:bg-white/[0.04] hover:text-pure-white transition-all group font-medium text-sm"
+          >
             <Settings className="w-4 h-4 group-hover:rotate-45 transition-transform" />
             <span>Configuración</span>
           </button>

@@ -4,7 +4,7 @@ import { FireMap } from './components/FireMap';
 import { AlertCard } from './components/AlertCard';
 import { StatsPanel } from './components/StatsPanel';
 import { Login } from './components/Login';
-import { Search, Filter, Bell, Moon, Sun, ShieldCheck, MapPin, AlertTriangle, Info } from 'lucide-react';
+import { Search, Filter, Bell, Moon, Sun, ShieldCheck, MapPin, AlertTriangle, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ReportesPage } from './components/pages/ReportesPage';
 import { AlertasPage } from './components/pages/AlertasPage';
@@ -35,7 +35,19 @@ const mockAlerts: FireAlert[] = [
 ];
 
 export default function App() {
-  const [darkMode, setDarkMode] = React.useState(true);
+  const [darkMode, setDarkMode] = React.useState(() => {
+    const saved = localStorage.getItem('vsol_dark_mode');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('vsol_dark_mode', String(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
   const [isAuthenticated, setIsAuthenticated] = React.useState(() => {
     return localStorage.getItem('vsol_auth') === 'true';
   });
@@ -48,6 +60,8 @@ export default function App() {
   
   const [alerts, setAlerts] = React.useState<FireAlert[]>(mockAlerts);
   const [activeTab, setActiveTab] = React.useState('monitoreo');
+  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
+  const [showUserModal, setShowUserModal] = React.useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -113,11 +127,12 @@ export default function App() {
   }
 
   return (
-      <div className={`flex h-screen bg-charcoal font-sans overflow-hidden ${darkMode ? 'dark' : ''}`}>
+      <div className="flex h-screen bg-charcoal font-sans overflow-hidden">
         <Sidebar 
             onLogout={handleLogout} 
             activeTab={activeTab} 
             onTabChange={setActiveTab} 
+            onSettingsClick={() => setShowSettingsModal(true)}
         />
 
         <main className="flex-1 flex flex-col min-w-0">
@@ -139,18 +154,81 @@ export default function App() {
                   </div>
               )}
 
-              <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="p-2.5 glass rounded-xl text-white/50 hover:text-white transition-all"
-              >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
+              <div className="relative">
+                <div 
+                  onClick={() => setShowUserModal(!showUserModal)}
+                  className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-white/[0.12] transition-colors uppercase"
+                >
+                  {userEmail[0]}
+                </div>
 
-              <div className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-white/[0.12] transition-colors uppercase">
-                {userEmail[0]}
+                {showUserModal && (
+                  <div className="absolute top-12 right-0 bg-dark-bg border border-white/10 rounded-xl p-4 shadow-2xl z-[9999] min-w-[250px]">
+                    <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                      <h3 className="text-pure-white font-bold text-sm">Perfil de Usuario</h3>
+                      <button onClick={() => setShowUserModal(false)} className="text-white/50 hover:text-white">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Email</p>
+                        <p className="text-sm text-pure-white">{userEmail}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Rol</p>
+                        <p className="text-sm text-pure-white">{userRole}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Estado</p>
+                        <p className="text-sm text-forest font-bold">Activo</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </header>
+
+          {showSettingsModal && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
+              <div className="bg-dark-bg border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+                <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+                  <h2 className="text-pure-white font-bold text-lg">Configuración del Sistema</h2>
+                  <button onClick={() => setShowSettingsModal(false)} className="text-white/50 hover:text-white p-1 rounded-lg hover:bg-white/10">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold text-pure-white mb-4">Apariencia</h3>
+                    <div className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02]">
+                      <div>
+                        <p className="text-sm text-pure-white font-medium">Tema de la aplicación</p>
+                        <p className="text-xs text-white/50">Cambia entre modo claro y oscuro</p>
+                      </div>
+                      <button
+                        onClick={() => setDarkMode(!darkMode)}
+                        className={cn(
+                          "relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none border border-white/10",
+                          !darkMode ? "bg-amber-400" : "bg-white/10"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "inline-block h-5 w-5 transform rounded-full bg-white transition-transform flex items-center justify-center shadow-md",
+                            !darkMode ? "translate-x-6" : "translate-x-1"
+                          )}
+                        >
+                          {!darkMode ? <Sun className="w-3 h-3 text-amber-600" /> : <Moon className="w-3 h-3 text-black" />}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto p-8 flex gap-8">
             {activeTab === 'monitoreo' && (
@@ -206,7 +284,7 @@ export default function App() {
 
                   <div className="flex-1 min-h-[500px]">
                     {/* FireMap ahora es independiente y no recibe la prop alerts */}
-                    <FireMap />
+                    <FireMap darkMode={darkMode} />
                   </div>
 
                   {userRole === 'ADMIN' && <StatsPanel />}

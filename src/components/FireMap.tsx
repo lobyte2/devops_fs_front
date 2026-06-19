@@ -18,7 +18,11 @@ const tacticalIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
-export function FireMap() {
+interface FireMapProps {
+  darkMode?: boolean;
+}
+
+export function FireMap({ darkMode = true }: FireMapProps) {
   const [zonas, setZonas] = useState<any[]>([]);
   const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,11 +57,13 @@ export function FireMap() {
           center={center} 
           zoom={13} 
           zoomControl={false}
-          style={{ height: '100%', width: '100%', background: '#0A0C0E' }}
+          style={{ height: '100%', width: '100%', background: darkMode ? '#0A0C0E' : '#F3F4F6' }}
         >
-          {/* Estilo de mapa oscuro táctico */}
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url={darkMode 
+              ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            }
             attribution='&copy; CARTO'
           />
 

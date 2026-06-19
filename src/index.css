@@ -6,15 +6,37 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   
   --color-emergency: #FF3B30;
-  --color-charcoal: #121417;
-  --color-dark-bg: #0A0B0D;
   --color-forest: #34C759;
-  --color-pure-white: #FFFFFF;
+  
+  --color-charcoal: var(--theme-charcoal);
+  --color-dark-bg: var(--theme-dark-bg);
+  --color-pure-white: var(--theme-pure-white);
+  
+  --color-white: var(--theme-white);
+  --color-black: var(--theme-black);
+}
+
+:root {
+  /* LIGHT MODE VARIABLES */
+  --theme-charcoal: #f3f4f6;
+  --theme-dark-bg: #ffffff;
+  --theme-pure-white: #111827;
+  --theme-white: #000000; /* Invert white utility to black for contrast */
+  --theme-black: #ffffff; /* Invert black utility to white */
+}
+
+.dark {
+  /* DARK MODE VARIABLES */
+  --theme-charcoal: #121417;
+  --theme-dark-bg: #0A0B0D;
+  --theme-pure-white: #FFFFFF;
+  --theme-white: #ffffff;
+  --theme-black: #000000;
 }
 
 @layer base {
   body {
-    @apply bg-charcoal text-pure-white selection:bg-emergency/30;
+    @apply bg-charcoal text-pure-white selection:bg-emergency/30 transition-colors duration-300;
   }
 }
 
