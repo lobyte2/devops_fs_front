@@ -1,5 +1,5 @@
 # Etapa 1: Construcción de los archivos estáticos
-FROM node:18-alpine as build
+FROM node:18 AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
