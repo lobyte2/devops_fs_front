@@ -1,13 +1,15 @@
 import { Alerta, Usuario, ZonaMonitoreo, Historial, Reporte, ReporteBackend } from '../types';
 
+// La URL base apunta directo al balanceador. 
+// No agregamos /api porque el Gateway ya gestiona el enrutamiento.
 const API_BASE_URL = 'http://bomberos-alb-155931198.us-east-1.elb.amazonaws.com'; 
 
-// Función auxiliar para obtener las cabeceras incluyendo la forma de enviar el token (Bearer)
+// Función auxiliar para obtener las cabeceras
 const getAuthHeaders = () => {
   const token = localStorage.getItem('vsol_token');
   return {
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}) // FORMATO PORTADOR (BEARER)
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 };
 
@@ -84,23 +86,20 @@ export const finalizarAlertaYCrearHistorial = async (
 
 // --- OBJETO API ---
 export const api = {
-  // USUARIOS: Autenticación (¿Quién eres?)
-  // Nota: Dejamos el retorno dinámico ya que ahora devuelve { email, rol, token }
+  // USUARIOS: Login directo a /usuarios/login
   login: async (email: string, password: string): Promise<any> => {
     const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, // Login no lleva token porque apenas lo va a obtener
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+    
     if (!response.ok) throw new Error('Credenciales inválidas');
     
     const data = await response.json();
-    
-    // Almacenamos la credencial digital entregada por el backend
     if (data.token) {
       localStorage.setItem('vsol_token', data.token);
     }
-    
     return data;
   },
 
